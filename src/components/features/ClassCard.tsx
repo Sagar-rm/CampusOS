@@ -24,7 +24,8 @@ function useCountdown(minutesUntil?: number) {
   const [mins, setMins] = useState(minutesUntil ?? 0);
   useEffect(() => {
     if (minutesUntil === undefined) return;
-    setMins(minutesUntil);
+    
+    // We update local state in an interval to avoid cascading renders
     const interval = setInterval(() => setMins((p) => Math.max(0, p - 1)), 60000);
     return () => clearInterval(interval);
   }, [minutesUntil]);

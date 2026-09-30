@@ -14,7 +14,7 @@ export default function NotFoundScreen() {
         <Typography variant="h2">🗺️</Typography>
         <Typography variant="h3" color="primary">Page not found</Typography>
         <Typography variant="body" color="secondary" style={styles.sub}>
-          This route doesn't exist.
+          This route doesn&apos;t exist.
         </Typography>
         <Link href="/(tabs)" style={{ marginTop: Spacing[4] }}>
           <Typography variant="label" color="brand">Go to Home →</Typography>

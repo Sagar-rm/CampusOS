@@ -4,6 +4,7 @@
     "slug": "campusos",
     "version": "1.0.0",
     "orientation": "portrait",
+    "platforms": ["android","ios"],
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "scheme": "campusos",
@@ -14,7 +15,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#4F46E5",
-        "foregroundImage": "./assets/adaptive-icon.png"
+        "foregroundImage": "./assets/android-icon-foreground.png"
       },
       "package": "com.campusos.app"
     },

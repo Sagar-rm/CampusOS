@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -32,7 +32,6 @@ const priorityVariant: Record<TaskPriority, 'error' | 'warning' | 'neutral'> = {
 
 function formatDue(dueDate: string, dueTime?: string): string {
   const today = new Date().toISOString().split('T')[0];
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
   if (dueDate === today) return dueTime ? `Today, ${dueTime}` : 'Today';
   if (dueDate < today) return 'Overdue';
   const d = new Date(dueDate);
@@ -41,10 +40,10 @@ function formatDue(dueDate: string, dueTime?: string): string {
 
 export function TaskItem({ task, onComplete, onUncomplete }: TaskItemProps) {
   const { colors } = useTheme();
-  const translateX = useRef(new Animated.Value(0)).current;
+  const [translateX] = useState(() => new Animated.Value(0));
   const isOverdue = !task.completed && task.dueDate < new Date().toISOString().split('T')[0];
 
-  const panResponder = useRef(
+  const [panResponder] = useState(() =>
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 10 && Math.abs(g.dy) < 20,
       onPanResponderMove: (_, g) => {
@@ -62,7 +61,7 @@ export function TaskItem({ task, onComplete, onUncomplete }: TaskItemProps) {
         }
       },
     })
-  ).current;
+  );
 
   return (
     <Animated.View

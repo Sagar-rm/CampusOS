@@ -10,6 +10,7 @@ export interface Student {
   rollNumber: string;
   email: string;
   avatarUrl?: string;
+  cgpa?: number;
 }
 
 // ─── Timetable ────────────────────────────────────────────────────────────────

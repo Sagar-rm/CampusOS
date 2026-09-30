@@ -22,6 +22,7 @@ import { Spacing, Radius } from '../../src/constants/theme';
 interface ProfileData {
   student: Student;
   overallAttendance: number;
+  cgpa: number;
 }
 
 export default function ProfileScreen() {
@@ -36,7 +37,7 @@ export default function ProfileScreen() {
         studentService.getStudent(),
         attendanceService.getSummary(),
       ]);
-      setData({ student, overallAttendance: attendance.overall });
+      setData({ student, overallAttendance: attendance.overall, cgpa: student.cgpa || 8.5 });
       setStatus('success');
     } catch {
       setStatus('error');
@@ -124,6 +125,12 @@ export default function ProfileScreen() {
                 {overallAttendance}%
               </Typography>
               <Typography variant="caption" color="secondary">Attendance</Typography>
+            </View>
+            <View style={styles.academicItem}>
+              <Typography variant="h3" color="primary">
+                {data.cgpa}
+              </Typography>
+              <Typography variant="caption" color="secondary">CGPA</Typography>
             </View>
           </View>
         </Card>

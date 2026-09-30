@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AccessibilityInfo } from 'react-native';
 import { useTheme } from '../../src/hooks/useTheme';
 import { Typography } from '../../src/components/ui/Typography';
 import { Button } from '../../src/components/ui/Button';
@@ -22,20 +23,31 @@ export default function WelcomeScreen() {
   const { colors, isDark } = useTheme();
 
   // Entrance animations
-  const logoOpacity = useRef(new Animated.Value(0)).current;
-  const logoTranslate = useRef(new Animated.Value(30)).current;
-  const taglineOpacity = useRef(new Animated.Value(0)).current;
-  const ctaOpacity = useRef(new Animated.Value(0)).current;
+  const [logoOpacity] = useState(() => new Animated.Value(0));
+  const [logoTranslate] = useState(() => new Animated.Value(30));
+  const [taglineOpacity] = useState(() => new Animated.Value(0));
+  const [ctaOpacity] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
-    Animated.sequence([
-      Animated.parallel([
-        Animated.timing(logoOpacity, { toValue: 1, duration: 600, delay: 200, useNativeDriver: true }),
-        Animated.timing(logoTranslate, { toValue: 0, duration: 600, delay: 200, useNativeDriver: true }),
-      ]),
-      Animated.timing(taglineOpacity, { toValue: 1, duration: 400, useNativeDriver: true }),
-      Animated.timing(ctaOpacity, { toValue: 1, duration: 400, useNativeDriver: true }),
-    ]).start();
+    // Respect reduced motion setting
+    AccessibilityInfo.isReduceMotionEnabled().then((reduce) => {
+      if (reduce) {
+        // Instantly set final values
+        logoOpacity.setValue(1);
+        logoTranslate.setValue(0);
+        taglineOpacity.setValue(1);
+        ctaOpacity.setValue(1);
+      } else {
+        Animated.sequence([
+          Animated.parallel([
+            Animated.timing(logoOpacity, { toValue: 1, duration: 600, delay: 200, useNativeDriver: true }),
+            Animated.timing(logoTranslate, { toValue: 0, duration: 600, delay: 200, useNativeDriver: true }),
+          ]),
+          Animated.timing(taglineOpacity, { toValue: 1, duration: 400, useNativeDriver: true }),
+          Animated.timing(ctaOpacity, { toValue: 1, duration: 400, useNativeDriver: true }),
+        ]).start();
+      }
+    });
   }, []);
 
   const handleGoogleSignIn = () => {

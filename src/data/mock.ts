@@ -20,6 +20,7 @@ export const mockStudent: Student = {
   semester: 5,
   rollNumber: '1BI22CS089',
   email: 'sagar.hegde@bit.edu.in',
+  cgpa: 8.5,
 };
 
 // ─── Subjects ─────────────────────────────────────────────────────────────────
