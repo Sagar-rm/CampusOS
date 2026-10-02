@@ -65,7 +65,7 @@ export function ErrorState({
       </Typography>
       {onRetry && (
         <Typography
-          vant="label"
+          variant="label"
           color="brand"
           style={{ marginTop: Spacing[4] }}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

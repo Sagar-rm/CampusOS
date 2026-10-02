@@ -8,10 +8,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../src/hooks/useTheme';
 import { Typography } from '../../src/components/ui/Typography';
 import { Card } from '../../src/components/ui/Card';
-import { Badge } from '../../src/components/ui/Badge';
 import { ClassCard } from '../../src/components/features/ClassCard';
 import { TaskItem } from '../../src/components/features/TaskItem';
 import { LoadingState, EmptyState, ErrorState } from '../../src/components/ui/StateViews';
@@ -19,6 +19,7 @@ import { timetableService } from '../../src/services/timetable.service';
 import { attendanceService } from '../../src/services/attendance.service';
 import { tasksService } from '../../src/services/tasks.service';
 import { studentService } from '../../src/services/student.service';
+import { useTaskStore } from '../../src/stores/taskStore';
 import { TodayClass, Task, AIInsight } from '../../src/types';
 import { Spacing, Radius } from '../../src/constants/theme';
 import { mockInsights } from '../../src/data/mock';
@@ -39,7 +40,6 @@ function formatDate(): string {
 interface HomeData {
   studentName: string;
   todayClasses: TodayClass[];
-  urgentTasks: Task[];
   overallAttendance: number;
   atRiskCount: number;
   insight: AIInsight;
@@ -51,18 +51,25 @@ export default function HomeScreen() {
   const [status, setStatus] = useState<'loading' | 'error' | 'success'>('loading');
   const [refreshing, setRefreshing] = useState(false);
 
+  const tasksStoreTasks = useTaskStore((s) => s.tasks);
+  const fetchTasks = useTaskStore((s) => s.fetchTasks);
+  const tasksStatus = useTaskStore((s) => s.status);
+
   const load = useCallback(async () => {
     try {
-      const [student, classes, tasks, attendance] = await Promise.all([
+      const [student, classes, attendance] = await Promise.all([
         studentService.getStudent(),
         timetableService.getTodayClasses(),
-        tasksService.getTodayTasksPreview(),
         attendanceService.getSummary(),
       ]);
+      
+      if (tasksStatus === 'idle') {
+        fetchTasks();
+      }
+
       setData({
         studentName: student.firstName,
         todayClasses: classes,
-        urgentTasks: tasks,
         overallAttendance: attendance.overall,
         atRiskCount: attendance.atRiskCount,
         insight: mockInsights[Math.floor(Math.random() * mockInsights.length)],
@@ -71,20 +78,22 @@ export default function HomeScreen() {
     } catch {
       setStatus('error');
     }
-  }, []);
+  }, [fetchTasks, tasksStatus]);
 
   useEffect(() => { load(); }, [load]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await load();
+    await Promise.all([load(), fetchTasks()]);
     setRefreshing(false);
-  }, [load]);
+  }, [load, fetchTasks]);
+
+  const completeTask = useTaskStore((s) => s.completeTask);
 
   const handleCompleteTask = useCallback(async (id: string) => {
-    await tasksService.completeTask(id);
-    await load();
-  }, [load]);
+    await completeTask(id);
+    try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch {}
+  }, [completeTask]);
 
   if (status === 'loading' && !data) {
     return (
@@ -110,6 +119,11 @@ export default function HomeScreen() {
   const currentClass = now.todayClasses.find((c) => c.status === 'ongoing');
   const nextClass = now.todayClasses.find((c) => c.status === 'upcoming');
   const displayClass = currentClass ?? nextClass ?? null;
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const urgentTasks = tasksStoreTasks
+    .filter((t) => !t.completed && t.dueDate <= todayStr)
+    .slice(0, 3);
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.bgPrimary }]} edges={['top']}>
@@ -191,12 +205,12 @@ export default function HomeScreen() {
           title="Today's Tasks"
           action={{ label: 'View all', onPress: () => router.push('/(tabs)/tasks') }}
         >
-          {now.urgentTasks.length === 0 ? (
+          {urgentTasks.length === 0 ? (
             <Card>
               <EmptyState emoji="🎉" title="No tasks for today" subtitle="You're all caught up." />
             </Card>
           ) : (
-            now.urgentTasks.map((task) => (
+            urgentTasks.map((task) => (
               <TaskItem
                 key={task.id}
                 task={task}

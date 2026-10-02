@@ -5,17 +5,16 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { useColorScheme } from 'react-native';
 import { useTheme } from '../../src/hooks/useTheme';
 import { Typography } from '../../src/components/ui/Typography';
 import { Card } from '../../src/components/ui/Card';
 import { LoadingState, ErrorState } from '../../src/components/ui/StateViews';
 import { studentService } from '../../src/services/student.service';
 import { attendanceService } from '../../src/services/attendance.service';
+import { useThemeStore } from '../../src/stores/themeStore';
 import { Student } from '../../src/types';
 import { Spacing, Radius } from '../../src/constants/theme';
 
@@ -26,8 +25,9 @@ interface ProfileData {
 }
 
 export default function ProfileScreen() {
-  const { colors, isDark } = useTheme();
-  const scheme = useColorScheme();
+  const { colors } = useTheme();
+  const themePreference = useThemeStore((s) => s.preference);
+  const setThemePreference = useThemeStore((s) => s.setPreference);
   const [data, setData] = useState<ProfileData | null>(null);
   const [status, setStatus] = useState<'loading' | 'error' | 'success'>('loading');
 
@@ -140,9 +140,33 @@ export default function ProfileScreen() {
         <Card style={styles.infoCard}>
           <View style={styles.settingRow}>
             <Typography variant="body" color="primary">Appearance</Typography>
-            <Typography variant="caption" color="secondary">
-              {scheme === 'dark' ? 'Dark mode' : 'Light mode'} (system)
-            </Typography>
+          </View>
+          <View style={styles.themeRow}>
+            {(['light', 'dark', 'system'] as const).map((opt) => {
+              const selected = themePreference === opt;
+              const labels = { light: '☀️ Light', dark: '🌙 Dark', system: '⚙️ System' };
+              return (
+                <TouchableOpacity
+                  key={opt}
+                  onPress={() => setThemePreference(opt)}
+                  activeOpacity={0.7}
+                  style={[
+                    styles.themeChip,
+                    {
+                      backgroundColor: selected ? colors.brandDefault : colors.surfaceSecondary,
+                      borderColor: selected ? colors.brandDefault : colors.borderDefault,
+                    },
+                  ]}
+                >
+                  <Typography
+                    variant="caption"
+                    style={{ color: selected ? '#FFFFFF' : colors.textSecondary }}
+                  >
+                    {labels[opt]}
+                  </Typography>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </Card>
 
@@ -253,6 +277,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: Spacing[4],
     paddingVertical: Spacing[3],
+  },
+  themeRow: {
+    flexDirection: 'row',
+    gap: Spacing[2],
+    paddingHorizontal: Spacing[4],
+    paddingBottom: Spacing[3],
+  },
+  themeChip: {
+    flex: 1,
+    paddingVertical: Spacing[2],
+    borderRadius: Radius.full,
+    borderWidth: 1,
+    alignItems: 'center',
   },
   signOutBtn: {
     marginTop: Spacing[6],

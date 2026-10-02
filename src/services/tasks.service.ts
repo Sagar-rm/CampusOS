@@ -7,11 +7,7 @@ function delay(ms: number): Promise<void> {
 
 const todayStr = () => new Date().toISOString().split('T')[0];
 
-function addDays(base: string, n: number): string {
-  const d = new Date(base);
-  d.setDate(d.getDate() + n);
-  return d.toISOString().split('T')[0];
-}
+
 
 export function getTaskGroup(task: Task): TaskGroup {
   if (task.completed) return 'completed';
@@ -62,5 +58,15 @@ export const tasksService = {
     return _tasks
       .filter((t) => !t.completed && (t.dueDate <= today))
       .slice(0, 3);
+  },
+
+  async deleteTask(id: string): Promise<void> {
+    await delay(100);
+    _tasks = _tasks.filter((t) => t.id !== id);
+  },
+
+  async updateTask(id: string, updates: Partial<Task>): Promise<void> {
+    await delay(100);
+    _tasks = _tasks.map((t) => (t.id === id ? { ...t, ...updates } : t));
   },
 };

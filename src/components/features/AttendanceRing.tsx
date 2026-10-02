@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated } from 'react-native';
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
 import { Typography } from '../ui/Typography';
 import { useTheme } from '../../hooks/useTheme';
-import { SubjectAttendance, AttendanceStatus } from '../../types';
+import { SubjectAttendance } from '../../types';
 import { Spacing, Radius } from '../../constants/theme';
 
 interface AttendanceRingProps {
@@ -10,23 +10,8 @@ interface AttendanceRingProps {
   size?: number;
 }
 
-const STATUS_CONFIG: Record<AttendanceStatus, { color: string; label: string }> = {
-  safe: { color: '', label: 'Good' },
-  warning: { color: '', label: 'At Risk' },
-  critical: { color: '', label: 'Critical' },
-};
-
 export function AttendanceRing({ subject, size = 64 }: AttendanceRingProps) {
   const { colors } = useTheme();
-  const animValue = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(animValue, {
-      toValue: subject.percentage / 100,
-      duration: 600,
-      useNativeDriver: false,
-    }).start();
-  }, [subject.percentage]);
 
   const statusColor =
     subject.status === 'safe'

@@ -77,6 +77,7 @@ export type TaskGroup = 'today' | 'week' | 'overdue' | 'completed';
 export interface Task {
   id: string;
   title: string;
+  description?: string;
   subjectCode?: string;
   subjectName?: string;
   priority: TaskPriority;

@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Animated,
   PanResponder,
+  Pressable,
 } from 'react-native';
 import { Typography } from '../ui/Typography';
 import { Badge } from '../ui/Badge';
@@ -16,6 +17,8 @@ interface TaskItemProps {
   task: Task;
   onComplete: (id: string) => void;
   onUncomplete?: (id: string) => void;
+  onDelete?: () => void;
+  onEdit?: () => void;
 }
 
 const priorityLabel: Record<TaskPriority, string> = {
@@ -38,7 +41,7 @@ function formatDue(dueDate: string, dueTime?: string): string {
   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
 
-export function TaskItem({ task, onComplete, onUncomplete }: TaskItemProps) {
+export function TaskItem({ task, onComplete, onUncomplete, onDelete, onEdit }: TaskItemProps) {
   const { colors } = useTheme();
   const [translateX] = useState(() => new Animated.Value(0));
   const isOverdue = !task.completed && task.dueDate < new Date().toISOString().split('T')[0];
@@ -68,7 +71,10 @@ export function TaskItem({ task, onComplete, onUncomplete }: TaskItemProps) {
       style={{ transform: [{ translateX }] }}
       {...panResponder.panHandlers}
     >
-      <View
+      <Pressable
+        onLongPress={onDelete}
+        onPress={onEdit}
+        delayLongPress={500}
         style={[
           styles.container,
           {
@@ -128,7 +134,7 @@ export function TaskItem({ task, onComplete, onUncomplete }: TaskItemProps) {
             <Typography variant="caption" color="tertiary">←</Typography>
           </View>
         )}
-      </View>
+      </Pressable>
     </Animated.View>
   );
 }
